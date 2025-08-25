@@ -39,8 +39,6 @@ client.once('clientReady', () => {
 
   // Vérifier immédiatement au démarrage
   checkHour();
-
-  sendScheduledMessage(0);
 });
 
 // Fonction pour vérifier l'heure et envoyer un message si c'est une heure paire
