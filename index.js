@@ -35,20 +35,16 @@ client.once('clientReady', () => {
   console.log(`✅ Bot connecté en tant que ${client.user.tag}`);
 
   // Rich presence du bot
-  client.user.setPresence({
+  client.user.setActivity({
     activities: [
       {
-        name: "Turf War on Camp Triggerfish",
-        type: 0,
-        assets: {
-          largeImage: "splatoon_1",
-          largeText: "Splatoon 1",
-          smallImage: "camp_triggerfish",
-          smallText: "Camp Triggerfish"
-        },
-        timestamps: {
-          start: Date.now()
-        }
+        state: "Playing Turf War on Camp Triggerfish",
+        details: "Splatoon 1",
+        startTimestamp: Date.now(),
+        largeImageKey: "splatoon_1",
+        largeImageText: "Splatoon 1",
+        smallImageKey: "camp_triggerfish",
+        smallImageText: "Camp Triggerfish"
       }
     ],
     status: "online"
