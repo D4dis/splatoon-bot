@@ -93,6 +93,9 @@ async function sendScheduledMessage(hour) {
       return;
     }
 
+    // Supprimer le dernier message si il existe
+    await deletePreviousMessage();
+
     // Récupérer les Maps actuelles
     const response = await axios.get(API_CURRENT_MAPS);
     const responseMaps = await axios.get(API_MAPS);
@@ -257,6 +260,8 @@ async function sendScheduledMessage(hour) {
         name: 'composite.png'
       }]
     });
+
+    lastMessageId = sentMessage.id;
     console.log(`✅ Embed envoyé pour ${hour}h`);
 
   } catch (error) {
@@ -289,9 +294,6 @@ async function deletePreviousMessage() {
     return false;
   }
 }
-
-// Utilisation
-await deletePreviousMessage();
 
 // Gérer les erreurs
 client.on('error', console.error);
