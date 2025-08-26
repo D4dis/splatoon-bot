@@ -36,18 +36,13 @@ client.once('clientReady', () => {
 
   // Rich presence du bot
   client.user.setActivity({
-    activities: [
-      {
-        state: "Playing Turf War on Camp Triggerfish",
-        details: "Splatoon 1",
-        startTimestamp: Date.now(),
-        largeImageKey: "splatoon_1",
-        largeImageText: "Splatoon 1",
-        smallImageKey: "camp_triggerfish",
-        smallImageText: "Camp Triggerfish"
-      }
-    ],
-    status: "online"
+    state: "Playing Turf War on Camp Triggerfish",
+    details: "Splatoon 1",
+    startTimestamp: Date.now(),
+    largeImageKey: "splatoon_1",
+    largeImageText: "Splatoon 1",
+    smallImageKey: "camp_triggerfish",
+    smallImageText: "Camp Triggerfish"
   });
 
   // Vérifier l'heure toutes les minutes
