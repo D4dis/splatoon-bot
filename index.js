@@ -33,6 +33,19 @@ let lastSentHour = null;
 // Quand le bot est prêt
 client.once('clientReady', () => {
   console.log(`✅ Bot connecté en tant que ${client.user.tag}`);
+  {
+    discordPresence.state = "Playing Turf War on Camp Triggerfish";
+    discordPresence.details = "Splatoon 1";
+    discordPresence.startTimestamp = 1507665886;
+    discordPresence.endTimestamp = 1507665886;
+    discordPresence.largeImageKey = "splatoon_1";
+    discordPresence.largeImageText = "Splatoon 1";
+    discordPresence.smallImageKey = "camp_triggerfish";
+    discordPresence.smallImageText = "Camp Triggerfish";
+    discordPresence.partySize = 1;
+    discordPresence.partyMax = 5;
+    discordPresence.joinSecret = "MTI4NzM0OjFpMmhuZToxMjMxMjM= ";
+  }
 
   // Vérifier l'heure toutes les minutes
   setInterval(checkHour, 60 * 1000);
