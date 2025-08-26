@@ -253,7 +253,7 @@ async function sendScheduledMessage(hour) {
       .setFooter({ text: `Mise à jour • ${new Date().toLocaleTimeString('fr-FR')}` });
 
     // Envoyer l'embed
-    await channel.send({
+    const sentMessage = await channel.send({
       embeds: [embed],
       files: [{
         attachment: compositeImagePath,
