@@ -1,15 +1,35 @@
-import { Client, GatewayIntentBits, EmbedBuilder } from 'discord.js';
+import { Client, Events, GatewayIntentBits, EmbedBuilder, REST, Routes } from 'discord.js';
 import { createCanvas, loadImage } from '@napi-rs/canvas';
 import { promises as fs } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import path from 'path';
-import axios from 'axios';
+import axios, { all } from 'axios';
 import dotenv from 'dotenv';
 
 dotenv.config();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+
+// Commandes
+const commands = [
+  {
+    name: "rotation",
+    description: "Display the 3 next stages"
+  },
+];
+
+const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_TOKEN);
+
+try {
+  console.log("Started refreshing application (/)commands.");
+
+  await rest.put(Routes.applicationGuildCommands(process.env.CLIENT_ID, process.env.GUILD_ID), { body: commands });
+
+  console.log("Successfully reloaded application (/)commands.");
+} catch (error) {
+  console.error(error);
+}
 
 // Créer un nouveau client Discord
 const client = new Client({
@@ -25,13 +45,14 @@ const client = new Client({
 const channelId = process.env.CHANNEL_ID;
 const API_MAPS = "https://splatoon.oatmealdome.me/api/v1/one/resources/versus?language=EUen";
 const API_CURRENT_MAPS = "https://splatoon.oatmealdome.me/api/v1/one/versus/pretendo/phases?count=1";
+const api_test = "https://splatoon.oatmealdome.me/api/v1/one/versus/pretendo/phases?startsAfter=2025-08-26T21%3A34%3A54Z&count=4";
 let lastMessageId = null;
 
 // Variables pour le suivi
 let lastSentHour = null;
 
 // Quand le bot est prêt
-client.once('clientReady', () => {
+client.once(Events.ClientReady, () => {
   console.log(`✅ Bot connecté en tant que ${client.user.tag}`);
 
   // Rich presence du bot
@@ -50,6 +71,7 @@ client.once('clientReady', () => {
 
   // Vérifier immédiatement au démarrage
   checkHour();
+
 });
 
 // Fonction pour vérifier l'heure et envoyer un message si c'est une heure paire
@@ -61,37 +83,12 @@ async function checkHour() {
 
   const now = new Date();
   const currentHour = now.getHours();
+  console.log(currentHour);
 
   // Vérifier si l'heure est paire et si on n'a pas déjà envoyé un message pour cette heure
   if (currentHour % 2 === 0 && currentHour !== lastSentHour) {
     lastSentHour = currentHour;
     await sendScheduledMessage(currentHour);
-  }
-}
-
-// Fonction pour supprimer tous les anciens messages du bot
-async function cleanupOldBotMessages() {
-  try {
-    const channel = client.channels.cache.get(channelId);
-    if (!channel) return;
-
-    // Récupérer les 100 derniers messages
-    const messages = await channel.messages.fetch({ limit: 100 });
-
-    // Filtrer les messages de ce bot
-    const botMessages = messages.filter(msg => msg.author.id === client.user.id);
-
-    // Supprimer tous les messages du bot (sauf si ça échoue)
-    for (const message of botMessages.values()) {
-      try {
-        await message.delete();
-        console.log(`🗑️ Message supprimé: ${message.id}`);
-      } catch (deleteError) {
-        console.log('⚠️ Impossible de supprimer un message:', deleteError.message);
-      }
-    }
-  } catch (error) {
-    console.log('⚠️ Erreur lors du nettoyage:', error.message);
   }
 }
 
@@ -119,20 +116,16 @@ async function sendScheduledMessage(hour) {
     const currentMapRegular = currentMapApi[0].Regular.stages;
     const currentMapRanked = currentMapApi[0].Gachi.stages;
     const rankedRule = mapsRule[currentMapApi[0].Gachi.rule];
-    let rankedIcon = "";
     let rankedEmoji = "";
 
     switch (currentMapApi[0].Gachi.rule) {
       case "Goal":
-        rankedIcon = "icons/Rainmaker.png";
         rankedEmoji = "<:Rainmaker:1409453978143559712>"
         break;
       case "Area":
-        rankedIcon = "icons/Splat_Zones.png";
         rankedEmoji = "<:Splat_Zones:1409580663719329933>"
         break;
       case "Lift":
-        rankedIcon = "icons/Tower_Control.png";
         rankedEmoji = "<:Tower_Control:1409453983218663434>"
         break;
     }
@@ -261,7 +254,6 @@ async function sendScheduledMessage(hour) {
         }
       )
       .setImage('attachment://composite.png')
-      .setFooter({ text: `Mise à jour • ${new Date().toLocaleTimeString('fr-FR')}` });
 
     // Envoyer l'embed
     const sentMessage = await channel.send({
@@ -305,6 +297,91 @@ async function deletePreviousMessage() {
     return false;
   }
 }
+
+
+// Fonction pour renvoyer les 3 prochaines maps
+async function getNextMaps() {
+  try {
+
+    const channel = client.channels.cache.get(channelId);
+    if (!channel) return console.log("❌ Canal introuvable");
+
+    const dateTime = new Date().toISOString();
+
+    const response = await axios.get(`https://splatoon.oatmealdome.me/api/v1/one/versus/pretendo/phases?startsAfter=${dateTime}&count=4`);
+    const responseMaps = await axios.get(API_MAPS);
+    const nextMaps = response.data;
+    const allMaps = responseMaps.data.stages;
+    console.log(nextMaps);
+
+
+
+    const fields = [];
+
+    nextMaps.map((map, index) => {
+      let rankedEmoji = "";
+
+      switch (nextMaps[index].Gachi.rule) {
+        case "Goal":
+          rankedEmoji = "<:Rainmaker:1409453978143559712>"
+          break;
+        case "Area":
+          rankedEmoji = "<:Splat_Zones:1409580663719329933>"
+          break;
+        case "Lift":
+          rankedEmoji = "<:Tower_Control:1409453983218663434>"
+          break;
+      }
+      const timeValue = index == 0 ? '`Now`' : `<t:${Math.floor(new Date(map.startTime).getTime() / 1000)}:t>`;
+      fields.push({
+        name: '🕒',
+        value: timeValue,
+        inline: true
+      });
+      fields.push({
+        name: '<:Regular_Battle:1409454604026122304> **REGULAR BATTLE**',
+        value: `${allMaps[map.Regular.stages[0]]}, ${allMaps[map.Regular.stages[1]]}`,
+        inline: true
+      });
+      fields.push({
+        name: `<:Ranked_Battle:1409454601232584714> **RANKED BATTLE - ${rankedEmoji} ${nextMaps[index].Gachi.rule}**`,
+        value: `${allMaps[map.Regular.stages[0]]}, ${allMaps[map.Regular.stages[1]]}`,
+        inline: false
+      })
+    })
+
+
+    const embed = new EmbedBuilder()
+      .setTitle('Future Stages')
+      .setColor(0x2F3136)
+      .setTimestamp()
+      .addFields(fields)
+
+    const sentMessage = await channel.send({
+      embeds: [embed]
+    });
+
+    console.log(`✅ Embed rotation envoyé`);
+  } catch (error) {
+    console.error('❌ Erreur:', error.message);
+
+    const channel = client.channels.cache.get(channelId);
+    if (channel) {
+      await channel.send("❌ Erreur lors de la récupération des données : " + error.message);
+    }
+  }
+}
+
+
+client.on(Events.InteractionCreate, async interaction => {
+  if (!interaction.isChatInputCommand()) return;
+
+  if (interaction.commandName === "rotation") {
+    await interaction.deferReply();
+    await getNextMaps();
+    await interaction.deleteReply();
+  }
+})
 
 // Gérer les erreurs
 client.on('error', console.error);
