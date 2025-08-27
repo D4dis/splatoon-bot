@@ -297,6 +297,17 @@ async function deletePreviousMessage() {
   }
 }
 
+// Arroundie les heures 
+function getRoundedDate(intervalHours = 2) {
+  const now = new Date();
+  const hours = now.getHours();
+  const roundedHours = Math.floor(hours / intervalHours) * intervalHours;
+
+  const roundedDate = new Date(now);
+  roundedDate.setHours(roundedHours, 0, 0, 0);
+
+  return roundedDate.toISOString();
+}
 
 // Fonction pour renvoyer les 3 prochaines maps
 async function getNextMaps() {
@@ -305,7 +316,7 @@ async function getNextMaps() {
     const channel = client.channels.cache.get(channelId);
     if (!channel) return console.log("❌ Canal introuvable");
 
-    const dateTime = new Date().toISOString();
+    const dateTime = getRoundedDate();
 
     const response = await axios.get(`https://splatoon.oatmealdome.me/api/v1/one/versus/pretendo/phases?startsAfter=${dateTime}&count=4`);
     const responseMaps = await axios.get(API_MAPS);
