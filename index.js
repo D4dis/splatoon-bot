@@ -355,7 +355,7 @@ async function getNextMaps() {
         },
         {
           name: `<:Ranked_Battle:1409454601232584714>** Ranked Battle - ${rankedEmoji} ${rankedRule}**`,
-          value: `${allMaps[map.Regular.stages[0]]}, ${allMaps[map.Regular.stages[1]]}`,
+          value: `${allMaps[map.Gachi.stages[0]]}, ${allMaps[map.Gachi.stages[1]]}`,
           inline: true
         }
       )
