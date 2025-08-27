@@ -358,12 +358,14 @@ async function getNextMaps() {
           value: `${allMaps[map.Gachi.stages[0]]}, ${allMaps[map.Gachi.stages[1]]}`,
           inline: true
         },
-        {
+      )
+      if (index != nextMaps.length - 1) {
+        fields.push({
           name: '\u200B',
           value: '\u200B',
           inline: false
-        }
-      )
+        });
+      }
     })
 
 
