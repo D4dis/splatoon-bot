@@ -340,7 +340,7 @@ async function getNextMaps() {
           rankedEmoji = "<:Tower_Control:1409453983218663434>"
           break;
       }
-      const timeValue = index == 0 ? '`Now`' : `<t:${Math.floor(new Date(map.startTime).getTime() / 1000) - 7200}:t>`;
+      const timeValue = index == 0 ? '`Now`' : `<t:${Math.floor(new Date(map.startTime).getTime() / 1000)}:t>`;
       const rankedRule = mapsRule[map.Gachi.rule];
       fields.push(
         {
