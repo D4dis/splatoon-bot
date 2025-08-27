@@ -6,6 +6,7 @@ import { dirname } from 'path';
 import path from 'path';
 import axios, { all } from 'axios';
 import dotenv from 'dotenv';
+import { time } from 'console';
 
 dotenv.config();
 const __filename = fileURLToPath(import.meta.url);
@@ -15,7 +16,7 @@ const __dirname = dirname(__filename);
 const commands = [
   {
     name: "rotation",
-    description: "Display the 3 next stages"
+    description: "Show current and 3 next stages"
   },
 ];
 
@@ -45,7 +46,6 @@ const client = new Client({
 const channelId = process.env.CHANNEL_ID;
 const API_MAPS = "https://splatoon.oatmealdome.me/api/v1/one/resources/versus?language=EUen";
 const API_CURRENT_MAPS = "https://splatoon.oatmealdome.me/api/v1/one/versus/pretendo/phases?count=1";
-const api_test = "https://splatoon.oatmealdome.me/api/v1/one/versus/pretendo/phases?startsAfter=2025-08-26T21%3A34%3A54Z&count=4";
 let lastMessageId = null;
 
 // Variables pour le suivi
@@ -83,7 +83,6 @@ async function checkHour() {
 
   const now = new Date();
   const currentHour = now.getHours();
-  console.log(currentHour);
 
   // Vérifier si l'heure est paire et si on n'a pas déjà envoyé un message pour cette heure
   if (currentHour % 2 === 0 && currentHour !== lastSentHour) {
@@ -312,9 +311,7 @@ async function getNextMaps() {
     const responseMaps = await axios.get(API_MAPS);
     const nextMaps = response.data;
     const allMaps = responseMaps.data.stages;
-    console.log(nextMaps);
-
-
+    const mapsRule = responseMaps.data.rules;
 
     const fields = [];
 
@@ -332,22 +329,25 @@ async function getNextMaps() {
           rankedEmoji = "<:Tower_Control:1409453983218663434>"
           break;
       }
-      const timeValue = index == 0 ? '`Now`' : `<t:${Math.floor(new Date(map.startTime).getTime() / 1000)}:t>`;
-      fields.push({
-        name: '🕒',
-        value: timeValue,
-        inline: true
-      });
-      fields.push({
-        name: '<:Regular_Battle:1409454604026122304> **REGULAR BATTLE**',
-        value: `${allMaps[map.Regular.stages[0]]}, ${allMaps[map.Regular.stages[1]]}`,
-        inline: true
-      });
-      fields.push({
-        name: `<:Ranked_Battle:1409454601232584714> **RANKED BATTLE - ${rankedEmoji} ${nextMaps[index].Gachi.rule}**`,
-        value: `${allMaps[map.Regular.stages[0]]}, ${allMaps[map.Regular.stages[1]]}`,
-        inline: false
-      })
+      const timeValue = index == 0 ? '`Now`' : `<t:${Math.floor(new Date(map.startTime).getTime() / 1000) - 7200}:t>`;
+      const rankedRule = mapsRule[map.Gachi.rule];
+      fields.push(
+        {
+          name: '🕒',
+          value: timeValue,
+          inline: true
+        },
+        {
+          name: '<:Regular_Battle:1409454604026122304> **Regular Battle**',
+          value: `${allMaps[map.Regular.stages[0]]}, ${allMaps[map.Regular.stages[1]]}`,
+          inline: true
+        },
+        {
+          name: `<:Ranked_Battle:1409454601232584714>** Ranked Battle - ${rankedEmoji} ${rankedRule}**`,
+          value: `${allMaps[map.Regular.stages[0]]}, ${allMaps[map.Regular.stages[1]]}`,
+          inline: true
+        }
+      )
     })
 
 
