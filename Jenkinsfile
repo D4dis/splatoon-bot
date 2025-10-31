@@ -49,5 +49,8 @@ pipeline {
         failure {
       echo 'Une erreur est survenue pendant le déploiement.'
         }
+        always {
+          cleanWs()
+        }
     }
 }
