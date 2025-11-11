@@ -47,6 +47,7 @@ const channelId = process.env.CHANNEL_ID;
 const API_MAPS = "https://splatoon.oatmealdome.me/api/v1/one/resources/versus?language=EUen";
 const API_CURRENT_MAPS = "https://splatoon.oatmealdome.me/api/v1/one/versus/pretendo/phases?count=1";
 let lastMessageId = null;
+let lastPhaseId = null;
 
 // Variables pour le suivi
 let lastSentHour = null;
@@ -70,7 +71,10 @@ client.once(Events.ClientReady, () => {
   setInterval(checkHour, 60 * 1000);
 
   // Vérifier immédiatement au démarrage
-  checkHour();
+  // checkHour();
+
+  // Vérifier les données toutes les heures
+  checkData();
 
 });
 
@@ -91,12 +95,31 @@ async function checkHour() {
   }
 }
 
+async function checkData() {
+  const now = new Date();
+  if (now.getMinutes() === 0) {
+    try {
+      const response = await axios.get(API_CURRENT_MAPS);
+
+      const responseData = response.data;
+
+      if (responseData[0].phaseId !== lastPhaseId) {
+        console.log("Nouvelle phase trouvée");
+        await sendScheduledMessage(getRoundedDate());
+      }
+
+    } catch (error) {
+      console.error('Erreur:', error.message);
+    }
+  }
+}
+
 // Fonction pour envoyer le message programmé avec embed
 async function sendScheduledMessage(hour) {
   try {
     const channel = client.channels.cache.get(channelId);
     if (!channel) {
-      console.log("❌ Canal non trouvé");
+      console.log("Canal non trouvé");
       return;
     }
 
@@ -112,6 +135,7 @@ async function sendScheduledMessage(hour) {
     // Extraire les données
     const mapsRule = maps.rules;
     const allMaps = maps.stages;
+    lastPhaseId = currentMapApi[0].phaseId;
     const currentMapRegular = currentMapApi[0].Regular.stages;
     const currentMapRanked = currentMapApi[0].Gachi.stages;
     const rankedRule = mapsRule[currentMapApi[0].Gachi.rule];
@@ -137,7 +161,7 @@ async function sendScheduledMessage(hour) {
         const buffer = await fs.readFile(filePath);
         return loadImage(buffer);
       } catch (error) {
-        console.error(`❌ Image non trouvée: ${filePath}`);
+        console.error(`Image non trouvée: ${filePath}`);
 
         // Créer une image de remplacement
         const canvas = createCanvas(100, 100);
@@ -264,14 +288,14 @@ async function sendScheduledMessage(hour) {
     });
 
     lastMessageId = sentMessage.id;
-    console.log(`✅ Embed envoyé pour ${hour}h`);
+    console.log(`Embed envoyé pour ${hour}h`);
 
   } catch (error) {
-    console.error('❌ Erreur:', error.message);
+    console.error('Erreur:', error.message);
 
     const channel = client.channels.cache.get(channelId);
     if (channel) {
-      await channel.send("❌ Erreur lors de la récupération des données : " + error.message);
+      await channel.send("Erreur lors de la récupération des données : " + error.message);
     }
   }
 }
@@ -284,14 +308,14 @@ async function deletePreviousMessage() {
     const channel = client.channels.cache.get(channelId);
     const message = await channel.messages.fetch(lastMessageId);
     await message.delete();
-    console.log('🗑️ Message précédent supprimé');
+    console.log('Message précédent supprimé');
     return true;
   } catch (error) {
     if (error.code === 10008) { // Unknown Message
-      console.log('⚠️ Message déjà supprimé');
+      console.log('Message déjà supprimé');
       lastMessageId = null;
     } else {
-      console.log('⚠️ Erreur suppression:', error.message);
+      console.log('Erreur suppression:', error.message);
     }
     return false;
   }
