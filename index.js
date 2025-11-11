@@ -54,7 +54,7 @@ let lastSentHour = null;
 
 // Quand le bot est prêt
 client.once(Events.ClientReady, () => {
-  console.log(`✅ Bot connecté en tant que ${client.user.tag}`);
+  console.log(`Bot connecté en tant que ${client.user.tag}`);
 
   // Rich presence du bot
   client.user.setPresence({
@@ -338,7 +338,7 @@ async function getNextMaps() {
   try {
 
     const channel = client.channels.cache.get(channelId);
-    if (!channel) return console.log("❌ Canal introuvable");
+    if (!channel) return console.log("Canal introuvable");
 
     const dateTime = getRoundedDate();
 
@@ -403,13 +403,13 @@ async function getNextMaps() {
       embeds: [embed]
     });
 
-    console.log(`✅ Embed rotation envoyé`);
+    console.log(`Embed rotation envoyé`);
   } catch (error) {
-    console.error('❌ Erreur:', error.message);
+    console.error('Erreur:', error.message);
 
     const channel = client.channels.cache.get(channelId);
     if (channel) {
-      await channel.send("❌ Erreur lors de la récupération des données : " + error.message);
+      await channel.send("Erreur lors de la récupération des données : " + error.message);
     }
   }
 }
