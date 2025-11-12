@@ -68,7 +68,7 @@ client.once(Events.ClientReady, () => {
   });
 
   // Vérifier l'heure toutes les minutes
-  setInterval(checkHour, 60 * 1000);
+  setInterval(checkData, 60 * 1000);
 
   // Vérifier immédiatement au démarrage
   // checkHour();
@@ -81,7 +81,7 @@ client.once(Events.ClientReady, () => {
 // Fonction pour vérifier l'heure et envoyer un message si c'est une heure paire
 async function checkHour() {
   if (!channelId) {
-    console.log("❌ ID de canal non défini");
+    console.log("ID de canal non défini");
     return;
   }
 
@@ -96,21 +96,25 @@ async function checkHour() {
 }
 
 async function checkData() {
+  if (!channelId) {
+    console.log("ID de canal non défini");
+    return;
+  }
+
   const now = new Date();
-  if (now.getMinutes() === 0) {
-    try {
-      const response = await axios.get(API_CURRENT_MAPS);
+  const currentHour = now.getHours();
 
-      const responseData = response.data;
+  try {
+    const response = await axios.get(API_CURRENT_MAPS);
+    const responseData = response.data;
 
-      if (responseData[0].phaseId !== lastPhaseId) {
-        console.log("Nouvelle phase trouvée");
-        await sendScheduledMessage(getRoundedDate());
-      }
-
-    } catch (error) {
-      console.error('Erreur:', error.message);
+    if (responseData[0].phaseId !== lastPhaseId) {
+      console.log("Nouvelle phase trouvée");
+      await sendScheduledMessage(currentHour);
     }
+
+  } catch (error) {
+    console.error('Erreur:', error.message);
   }
 }
 
