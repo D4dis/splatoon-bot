@@ -6,12 +6,18 @@ import { dirname } from 'path';
 import path from 'path';
 import axios, { all } from 'axios';
 import dotenv from 'dotenv';
-import { time } from 'console';
+
 
 dotenv.config();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
+const path = require('path');
+app.use('/js', express.static(path.join(__dirname, 'js')));
+app.use('/css', express.static(path.join(__dirname, 'css')));
+app.use('/img', express.static(path.join(__dirname, 'img')));
+
+module.exports = app;
 // Commandes
 const commands = [
   {
