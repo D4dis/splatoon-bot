@@ -1,3 +1,5 @@
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+
 import { Client, Events, GatewayIntentBits, EmbedBuilder, REST, Routes } from 'discord.js';
 import { createCanvas, loadImage } from '@napi-rs/canvas';
 import { promises as fs } from 'fs';
